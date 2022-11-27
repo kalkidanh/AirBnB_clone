@@ -33,10 +33,11 @@ class BaseModel:
         Returns:
             str: the string representation of the object
         """
-        return "[{}] ({}) {}".format(self.__class__.__name__, self.id, self.__dict__)
+        return "[{}] ({}) {}".format(self.__class__.__name__,
+                                     self.id, self.__dict__)
 
     def save(self):
-        """Updates the public instance attribute updated_at with the current datetime
+        """Updates the public instance attribute with the current datetime
         """
         self.updated_at = datetime.today()
         storage.save()
@@ -45,7 +46,7 @@ class BaseModel:
         """A public instance method
 
         Returns:
-            _dict_: a dictionary containing all keys/values of __dict__ of the instance
+            _dict_: a dictionary containing all keys/value of the instance
         """
         new_dict = self.__dict__.copy()
         new_dict["__class__"] = self.__class__.__name__
