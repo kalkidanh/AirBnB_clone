@@ -1,72 +1,34 @@
 #!/usr/bin/python3
-"""Unittest module for the User Class."""
-
+"""
+Module to test user.py
+"""
+from models.user import User
 import unittest
 from datetime import datetime
-import time
-from models.user import User
-import re
-import json
-from models.engine.file_storage import FileStorage
-import os
-from models import storage
-from models.base_model import BaseModel
-import pep8
 
 
 class TestUser(unittest.TestCase):
-    """Test Cases for the User class."""
+    """
+    Class to test User class
+    """
 
-    def setUp(self):
-        """Sets up test methods."""
-        pass
-
-    def tearDown(self):
-        """Tears down test methods."""
-        self.resetStorage()
-        pass
-
-    def resetStorage(self):
-        """Resets FileStorage data."""
-        FileStorage._FileStorage__objects = {}
-        if os.path.isfile(FileStorage._FileStorage__file_path):
-            os.remove(FileStorage._FileStorage__file_path)
-
-    def test_is_instantiation(self):
-        """Tests instantiation of User class."""
-
-        user = User()
-        self.assertEqual(str(type(user)), "<class 'models.user.User'>")
-        self.assertIsInstance(user, User)
-        self.assertTrue(issubclass(type(user), BaseModel))
-
-    def test_attributes(self):
-        """Tests the attributes of User class."""
-        attributes = storage.attributes()["User"]
-        user = User()
-        for k, v in attributes.items():
-            self.assertTrue(hasattr(user, k))
-            self.assertEqual(type(getattr(user, k, None)), v)
-
-    def test_pep8(self):
-        """Testing python code style"""
-        py_code_style = pep8.StyleGuide(quiet=True)
-        path_user = 'models/user.py'
-        result = py_code_style.check_files([path_user])
-        self.assertEqual(result.total_errors, 0,
-                         "errors found.")
-
-    def test_doc_user_class(self):
-        """Test to check user class documentation
+    def test_create(self):
         """
-        self.assertTrue(len(User.__doc__) > 0)
-
-    def test_doc_user_methods(self):
-        """Test to check user's methods documentation
+        Test the creation of User
         """
-        for method in dir(User):
-            self.assertTrue(len(method.__doc__) > 0)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        obj = User()
+        self.assertIsInstance(obj, User)
+        self.assertIsInstance(obj.id, str)
+        self.assertIsInstance(obj.created_at, datetime)
+        self.assertIsInstance(obj.updated_at, datetime)
+        self.assertRegex(obj.id,
+                         r"^[0-9ea-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$")
+        self.assertEqual(obj.email, "")
+        self.assertEqual(obj.password, "")
+        self.assertEqual(obj.first_name, "")
+        self.assertEqual(obj.last_name, "")
+        obj2 = User(**obj.to_dict())
+        self.assertEqual(obj.id, obj2.id)
+        self.assertEqual(obj.created_at, obj2.created_at)
+        self.assertEqual(obj.updated_at, obj2.updated_at)
+        self.assertEqual(obj.to_dict()['__class__'], User.__name__)

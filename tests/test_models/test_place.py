@@ -1,72 +1,43 @@
 #!/usr/bin/python3
-"""Unittest module for the Place Class."""
-
+"""
+Module to test place.py
+"""
+from models.place import Place
 import unittest
 from datetime import datetime
-import time
-from models.place import Place
-import re
-import json
-from models.engine.file_storage import FileStorage
-import os
-from models import storage
-from models.base_model import BaseModel
-import pep8
 
 
 class TestPlace(unittest.TestCase):
-    """Test Cases for the Place class."""
+    """
+    Class to test Place class
+    """
 
-    def setUp(self):
-        """Sets up test methods."""
-        pass
-
-    def tearDown(self):
-        """Tears down test methods."""
-        self.resetStorage()
-        pass
-
-    def resetStorage(self):
-        """Resets FileStorage data."""
-        FileStorage._FileStorage__objects = {}
-        if os.path.isfile(FileStorage._FileStorage__file_path):
-            os.remove(FileStorage._FileStorage__file_path)
-
-    def test_is_instance(self):
-        """Tests instantiation of Place class."""
-
-        place = Place()
-        self.assertEqual(str(type(place)), "<class 'models.place.Place'>")
-        self.assertIsInstance(place, Place)
-        self.assertTrue(issubclass(type(place), BaseModel))
-
-    def test_attributes(self):
-        """Tests the attributes of Place class."""
-        attributes = storage.attributes()["Place"]
-        place = Place()
-        for k, v in attributes.items():
-            self.assertTrue(hasattr(place, k))
-            self.assertEqual(type(getattr(place, k, None)), v)
-
-    def test_pep8(self):
-        """Testing python code style"""
-        py_code_style = pep8.StyleGuide(quiet=True)
-        path_user = 'models/place.py'
-        result = py_code_style.check_files([path_user])
-        self.assertEqual(result.total_errors, 0,
-                         "errors found.")
-
-    def test_doc_place_class(self):
-        """Test to check place class documentation
+    def test_create(self):
         """
-        self.assertTrue(len(Place.__doc__) > 0)
-
-    def test_doc_place_methods(self):
-        """Test to check place's methods documentation
+        Test the creation of Place
         """
-        for method in dir(Place):
-            self.assertTrue(len(method.__doc__) > 0)
+        obj = Place()
+        self.assertIsInstance(obj, Place)
+        self.assertIsInstance(obj.id, str)
+        self.assertIsInstance(obj.created_at, datetime)
+        self.assertIsInstance(obj.updated_at, datetime)
+        self.assertRegex(obj.id,
+                         r"^[0-9ea-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$")
 
+        self.assertEqual(obj.city_id, "")
+        self.assertEqual(obj.user_id, "")
+        self.assertEqual(obj.name, "")
+        self.assertEqual(obj.description, "")
+        self.assertEqual(obj.number_rooms, 0)
+        self.assertEqual(obj.number_bathrooms, 0)
+        self.assertEqual(obj.max_guest, 0)
+        self.assertEqual(obj.price_by_night, 0)
+        self.assertAlmostEqual(obj.latitude, 0.0)
+        self.assertAlmostEqual(obj.longitude, 0.0)
+        self.assertEqual(obj.amenity_ids, [])
 
-if __name__ == "__main__":
-    unittest.main()
+        obj2 = Place(**obj.to_dict())
+        self.assertEqual(obj.id, obj2.id)
+        self.assertEqual(obj.created_at, obj2.created_at)
+        self.assertEqual(obj.updated_at, obj2.updated_at)
+        self.assertEqual(obj.to_dict()['__class__'], Place.__name__)

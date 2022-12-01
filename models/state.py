@@ -1,10 +1,20 @@
 #!/usr/bin/python3
-"""This module creates a User class"""
+"""
+Module to hold class State
+"""
 
-from models.base_model import BaseModel
+from .base_model import BaseModel
 
 
 class State(BaseModel):
-    """Class for managing state objects"""
+    """
+    class representing a state
+    """
 
     name = ""
+
+    def __init__(self, *args, **kwargs):
+        if len(kwargs) > 0:
+            super().__init__(**kwargs)
+        else:
+            super().__init__()

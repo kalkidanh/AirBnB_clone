@@ -1,84 +1,78 @@
 #!/usr/bin/python3
-
-"""Define unit test for file storage class
+"""
+Module to test file_storage.py
 """
 
-import os
-import unittest
-from models.engine import file_storage
-from models.engine.file_storage import FileStorage
-from models.base_model import BaseModel
+
 from models import storage
-import pep8
+from models.base_model import BaseModel
+import unittest
+import json
 
 
-class TestFileStorageClass(unittest.TestCase):
-    """Representation of a set of tests for file storage class
+class TestFileStorage(unittest.TestCase):
+    """
+    Tests for class FileStorage
     """
 
-    def setUp(self):
-        """set up the test
+    def test_all_new(self):
         """
-        pass
-
-    def test_pep8(self):
-        """Test to check pycodestyle
+        Tests retrieving and creating object from file storage
         """
-        py_code_style = pep8.StyleGuide(quiet=True)
-        check = py_code_style.check_files(
-            ['models/engine/file_storage.py', 'tests/test_models/test_engine/test_file_storage.py'])
-        self.assertEqual(check.total_errors, 0, "Errors found")
+        obj1 = BaseModel()
+        obj2 = BaseModel()
+        new_dict = {f'{obj1.__class__.__name__}.{obj1.id}': obj1,
+                    f'{obj2.__class__.__name__}.{obj2.id}': obj2}
+        store_dict = storage.all()
+        for key, value in new_dict.items():
+            with self.subTest(key=key):
+                self.assertIs(store_dict[key], new_dict[key])
 
-    def test_is_instance(self):
-        """Test to check that the storage is instance
+        obj3 = BaseModel()
+        new_dict[f'{obj3.__class__.__name__}.{obj3.id}'] = obj3
+        store_dict = storage.all()
+
+        for key, value in new_dict.items():
+            with self.subTest(key=key):
+                self.assertIs(store_dict[key], new_dict[key])
+
+    def test_save_reload(self):
         """
-        self.assertTrue(isinstance(storage, FileStorage))
-
-    def test_all(self):
-        """Test to check the type of method all from file storage
+        Test the save and reload functionality of file storage
         """
-        file_stor = FileStorage()
-        self.assertTrue(type(file_stor.all()) == str)
+        obj1 = BaseModel()
+        obj2 = BaseModel()
+        storage.save()
 
-    def test_new(self):
-        """Test to check the new method
-        """
-        file_stor = FileStorage()
-        model = BaseModel()
-        file_stor.new(model)
-        dict1 = file_stor.all()
-        key = "{}.{}".format(type(model).__name__, model.id)
-        self.assertTrue(key in dict1)
+        with open("file.json", "r", encoding="utf-8") as f:
+            store_dict = json.load(f)
 
-    def test_reload(self):
-        """Test to check reload method
-        """
-        file_stor = FileStorage()
-        model = BaseModel()
-        file_stor.new(model)
-        file_stor.save()
-        dict1 = file_stor.all()
-        os.remove("test.json")
-        file_stor.reload()
-        dict2 = file_stor.all()
-        self.assertEqual(dict1 == dict2)
+        copy_dict = storage.all().copy()
 
-    def test_save(self):
-        """Test to check save method
-        """
-        file_stor = FileStorage()
-        model = BaseModel()
-        file_stor.new(model)
-        dict1 = file_stor.all()
-        file_stor.save()
-        file_stor.reload()
-        dict2 = file_stor.all()
-        for key in dict1:
-            key_1 = key
-        for key in dict2:
-            key_2 = key
-        self.assertEqual(dict1[key_1].to_dict(), dict2[key_2].to_dict())
+        for key, value in copy_dict.items():
+            copy_dict[key] = value.to_dict()
 
+        self.assertEqual(store_dict, copy_dict)
 
-if __name__ == '__main__':
-    unittest.main()
+        copy_dict = storage.all().copy()
+        storage.all().clear()
+
+        self.assertEqual(storage.all(), {})
+        storage.reload()
+        store_dict = storage.all()
+
+        for key, value in store_dict.items():
+            with self.subTest(key=key):
+                self.assertEqual(store_dict[key].id, copy_dict[key].id)
+                self.assertEqual(store_dict[key].created_at,
+                                 copy_dict[key].created_at)
+                self.assertEqual(store_dict[key].updated_at,
+                                 copy_dict[key].updated_at)
+
+        for key, value in copy_dict.items():
+            with self.subTest(key=key):
+                self.assertEqual(store_dict[key].id, copy_dict[key].id)
+                self.assertEqual(store_dict[key].created_at,
+                                 copy_dict[key].created_at)
+                self.assertEqual(store_dict[key].updated_at,
+                                 copy_dict[key].updated_at)

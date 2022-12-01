@@ -1,12 +1,16 @@
 #!/usr/bin/python3
-"""Define place class that inherits from BaseModel class
 """
-from models.base_model import BaseModel
+Module to hold class Place
+"""
+
+from .base_model import BaseModel
 
 
 class Place(BaseModel):
-    """Public instance of place class
     """
+    class representing a place
+    """
+
     city_id = ""
     user_id = ""
     name = ""
@@ -18,3 +22,9 @@ class Place(BaseModel):
     latitude = 0.0
     longitude = 0.0
     amenity_ids = []
+
+    def __init__(self, *args, **kwargs):
+        if len(kwargs) > 0:
+            super().__init__(**kwargs)
+        else:
+            super().__init__()
